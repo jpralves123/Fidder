@@ -1,0 +1,16 @@
+INSTALAR MOSQUITTO
+
+	apt-get install mosquitto
+	apt-get install mosquitto-clients
+
+RODAR MOSQUITTO PARA TESTES
+
+     > iot.eclipse.org 
+     > 1883
+     
+PUBLISHER: mosquitto_pub -h iot.eclipse.org -t fidder_test -m "mensagem" -p 1883
+SUBSCRIBE: mosquitto_sub -h iot.eclipse.org -t fidder_test
+
+
+
+

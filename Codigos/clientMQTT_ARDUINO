@@ -1,0 +1,66 @@
+#include <NanodeUIP.h>
+#include <NanodeMQTT.h>
+
+NanodeMQTT mqtt(&uip);
+
+// Mac address of Ethernet Shield
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+
+void message_callback (const char* topic, uint8_t* payload, int payload_lehgth){
+	Serial.print(topic);
+	Serial.print(" => ");
+	Serial.write(payload, payload_length);
+	Serial.println();
+
+	if (payload[0]=='1')
+		digital(5,HIGH);
+	else
+		digitalWrite(5,LOW);
+}
+
+float mymillis;
+
+void setup() { 
+	pinMode(5, OUTPUT);
+
+	Serial.begin(9200);
+	Serial.print("MQTT sub/pub - ");
+
+	// unio.read(macaddr, NANODE_MAC_ADDRESS, 6);
+	uip.init(mac);
+
+	// FIXME: use DHCP instead
+	uip.set_ip_addr(192,168,1,180); // My arduino
+	uip.set_netmask(255, 255, 255, 0);
+
+	uip.wait_for_link();
+	Serial.println("up -");
+
+	// FIXME: resolve using DNS instead
+	mqtt.set_server_addr(192, 168, 0, 17); //PC running mosquitto
+	mqtt.set_callback(message_callback); // the routine above
+	mymillis = millis()+2000;
+}
+
+void loop() {
+	if(!mqtt.connected()) { // initial and restry connection... hopefully once
+		while(!mqtt.connected()) {
+			Serial.print(".");
+			mqtt.connect();
+			mymillis = millis() + 250;
+			while (mymillis > millis());
+		}
+		
+		Serial.println("Connected to MQTT server");
+		mqtt.subscribe("test");
+	}
+	
+	uip.poll();
+	
+	if(mymillis<millis()) {
+		mqtt.publish("test", "hello world again!");
+		mymillis = millis() + 2000;
+	}
+}
+	
+
