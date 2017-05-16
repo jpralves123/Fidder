@@ -38,7 +38,7 @@ void setup() {
 
   Serial.println(F("ENC28j60 and Adafruit IO"));
   Serial.println();
-  
+
   // setup ethernet communication using DHCP
   if(Ethernet.begin(mac) == 0) {
 
@@ -78,11 +78,11 @@ void loop() {
   mqttClient.loop();
 }
 
-// **************************************************************************************
+// ***************************************************************************
 void mqttConnect() {
 
   while(!mqttClient.connected()) {
-    
+
     if(mqttClient.connect(CLIENT_ID, USERNAME, PASSWORD)) {
 
       Serial.println(F("MQTT client connected"));
@@ -90,12 +90,12 @@ void mqttConnect() {
       Serial.println(F("Topic subscribed"));
     } else {
       Serial.println(F("Unable to connect, retry in 5 seconds"));
-      delay(5000);
+      delay(PUBLISH_DELAY);
     }
   }
 }
 
-// **************************************************************************************
+// ***************************************************************************
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
   if(strncmp((const char*)payload, "ON", 2) == 0) {
@@ -106,16 +106,15 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     digitalWrite(RELAY_PIN, LOW);
   }
 }
-
-// **************************************************************************************
+// ***************************************************************************
 void sendData() {
 
   char msgBuffer[20];
-  
+
   float t = 1885.01;
   Serial.print("Temperature: ");
   Serial.println(t);
-    
+
   if(!mqttClient.connected()) mqttConnect();
   mqttClient.publish(PUB_TOPIC, dtostrf(t, 6, 2, msgBuffer));
 }
